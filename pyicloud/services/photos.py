@@ -1066,6 +1066,18 @@ class PhotoAsset:
         return self._master_record["recordName"]
 
     @property
+    def asset_id(self) -> str:
+        """Gets the photo asset id (CPLAsset ID)."""
+        return self._asset_record["recordName"]
+
+    def get_photo_ids(self) -> dict[str, str]:
+        """Gets both the CPLMaster ID and CPLAsset ID for this photo."""
+        return {
+            "cpl_master_id": self.id,
+            "cpl_asset_id": self.asset_id,
+        }
+
+    @property
     def filename(self) -> str:
         """Gets the photo file name."""
         return base64.b64decode(
