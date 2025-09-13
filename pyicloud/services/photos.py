@@ -1204,6 +1204,37 @@ class PhotoAsset:
             self.versions[version]["url"], stream=True, **kwargs
         )
 
+    def add_to_album(self, album: "BasePhotoAlbum") -> Response:
+        """Adds the photo to an existing album."""
+        album_id: str = album.obj_type.split(':')[1] if ':' in album.obj_type else album.obj_type
+        record_name: str = f"{self._asset_record['recordName']}-IN-{album_id}"
+        
+        data: dict[str, Any] = {
+            "operations": [
+                {
+                    "operationType": "create",
+                    "record": {
+                        "recordName": record_name,
+                        "recordType": "CPLContainerRelation",
+                        "fields": {
+                            "itemId": {"value": self._asset_record["recordName"]},
+                            "containerId": {"value": album_id}
+                        }
+                    }
+                }
+            ],
+            "zoneID": self._asset_record["zoneID"],
+            "atomic": True
+        }
+
+        endpoint: str = self._service.service_endpoint
+        params: str = urlencode(self._service.params)
+        url: str = f"{endpoint}/records/modify?{params}"
+
+        return self._service.session.post(
+            url, data=json.dumps(data), headers={CONTENT_TYPE: CONTENT_TYPE_TEXT}
+        )
+
     def delete(self) -> Response:
         """Deletes the photo."""
         data: dict[str, Any] = {
